@@ -1,0 +1,40 @@
+# Example configuration. Pass with: redis-health-digest digest -config config.yaml
+# Every value can also be set via environment variables (REDIS_HEALTH_*) or
+# flags. Precedence: defaults < this file < env vars < flags.
+
+redis:
+  addr: 127.0.0.1:6379
+  username: ""
+  password: ""
+  db: 0
+  tls: false
+
+environment: production
+timezone: UTC
+
+# State file for "since last check" delta counters (one-shot mode only).
+state_path: /var/lib/redis-health-digest/state.json
+
+thresholds:
+  min_hit_rate: 50.0          # WARN below this %
+  max_used_memory_mb: 512     # WARN above this
+  max_fragmentation_ratio: 1.5
+  max_evicted_keys_delta: 0   # WARN if keys evicted since last check
+  max_rejected_conn_delta: 0
+  require_persistence_ok: true # CRITICAL if RDB/AOF status != ok
+
+email:
+  enabled: false
+  host: smtp.example.com
+  port: 587
+  username: ""
+  password: ""
+  from: monitor@example.com
+  to:
+    - ops@example.com
+  subject: Redis Health Digest
+  only_when_not_ok: false     # true = only email on WARN/CRITICAL
+
+server:
+  addr: ":9099"
+  interval: 30s

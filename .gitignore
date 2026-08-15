@@ -1,0 +1,13 @@
+# Binaries
+/redis-health-digest
+/dist/
+*.exe
+
+# Local state / config
+*.state.json
+config.local.yaml
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
