@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -24,8 +25,25 @@ import (
 	"github.com/sunnysahijwani/redis-health-digest-go/internal/state"
 )
 
-// version is overridable at build time: -ldflags "-X main.version=v1.0.0".
+// version is set at release build time via -ldflags "-X main.version=v1.0.0".
+// When unset (e.g. `go install ...@v1.2.3`), resolveVersion falls back to the
+// version Go embeds in the binary's build info.
 var version = "dev"
+
+// resolveVersion reports the binary's version. An explicit ldflags value wins;
+// otherwise it uses the module version recorded in the build info (the tag or
+// pseudo-version for `go install`), falling back to "dev" for local builds.
+func resolveVersion() string {
+	if version != "dev" {
+		return version
+	}
+	if info, ok := debug.ReadBuildInfo(); ok {
+		if v := info.Main.Version; v != "" && v != "(devel)" {
+			return v
+		}
+	}
+	return version
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -40,7 +58,7 @@ func main() {
 	case "serve":
 		err = runServe(os.Args[2:])
 	case "version", "-v", "--version":
-		fmt.Println("redis-health-digest", version)
+		fmt.Println("redis-health-digest", resolveVersion())
 		return
 	case "help", "-h", "--help":
 		usage()
